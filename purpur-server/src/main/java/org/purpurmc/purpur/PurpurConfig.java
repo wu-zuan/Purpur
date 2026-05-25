@@ -620,4 +620,25 @@ public class PurpurConfig {
     private static void generateEndVoidRings() {
         generateEndVoidRings = getBoolean("settings.generate-end-void-rings", generateEndVoidRings);
     }
+
+    // Purpur start - Region-based Multi-threading
+    public static boolean multiThreadingEnabled = true;
+    public static int regionThreadCount = -1; // -1 = auto (cores - 2, min 1)
+    public static boolean threadProxyLogging = false;
+    public static long threadProxyTimeoutMs = 5000L;
+    public static boolean threadProxyWarnOnly = true;
+    private static void multiThreadingSettings() {
+        multiThreadingEnabled = getBoolean("settings.multi-threading.enabled", multiThreadingEnabled);
+        regionThreadCount = getInt("settings.multi-threading.region-thread-count", regionThreadCount);
+        threadProxyLogging = getBoolean("settings.multi-threading.proxy-logging", threadProxyLogging);
+        threadProxyTimeoutMs = getInt("settings.multi-threading.proxy-timeout-ms", (int) threadProxyTimeoutMs);
+        threadProxyWarnOnly = getBoolean("settings.multi-threading.proxy-warn-only", threadProxyWarnOnly);
+        if (multiThreadingEnabled) {
+            log(Level.INFO, "Region-based multi-threading is ENABLED with " +
+                (regionThreadCount <= 0 ? "auto-detected" : regionThreadCount) + " threads");
+            log(Level.WARNING, "Multi-threading is EXPERIMENTAL! Some plugins may not work correctly.");
+            log(Level.WARNING, "If you encounter issues, set 'settings.multi-threading.enabled' to false.");
+        }
+    }
+    // Purpur end - Region-based Multi-threading
 }
