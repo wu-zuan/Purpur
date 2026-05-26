@@ -1,0 +1,269 @@
+Initialized native services in: C:\Users\Wuzuantw\.gradle\native
+Initialized jansi services in: C:\Users\Wuzuantw\.gradle\native
+Removing daemon from the registry due to communication failure. Daemon information: DaemonInfo{pid=46096, address=[a7308e07-fb70-4ea9-ad7f-743f225d60ef port:50716, addresses:[/127.0.0.1]], state=Idle, lastBusy=1779804103920, context=DefaultDaemonContext[uid=2dfad84f-040a-4a07-b3e7-fdb8cb5693e1,javaHome=C:\Program Files\Android\Android Studio\jbr,javaVersion=21,javaVendor=JetBrains s.r.o.,daemonRegistryDir=C:\Users\Wuzuantw\.gradle\daemon,pid=46096,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=TW,-Duser.language=zh,-Duser.variant]}
+Removing 0 daemon stop events from registry
+Previous Daemon (44816) stopped at Tue May 26 21:42:28 CST 2026 stop command received
+Previous Daemon (38528) stopped at Tue May 26 21:50:29 CST 2026 stop command received
+Previous Daemon (47208) stopped at Tue May 26 21:53:07 CST 2026 stop command received
+Previous Daemon (46128) stopped at Tue May 26 21:56:04 CST 2026 stop command received
+Previous Daemon (33708) stopped at Tue May 26 21:56:04 CST 2026 stop command received
+Previous Daemon (36360) stopped at Tue May 26 21:28:51 CST 2026 other compatible daemons were started and after being idle for 0 minutes and not recently used
+Previous Daemon (46920) stopped at Tue May 26 21:53:36 CST 2026 by user or operating system
+Previous Daemon (46404) stopped at Tue May 26 21:54:00 CST 2026 by user or operating system
+Previous Daemon (41100) stopped at Tue May 26 21:54:00 CST 2026 by user or operating system
+Previous Daemon (49092) stopped at Tue May 26 21:56:27 CST 2026 by user or operating system
+Previous Daemon (43228) stopped at Tue May 26 21:56:32 CST 2026 by user or operating system
+Previous Daemon (39172) stopped at Tue May 26 21:56:40 CST 2026 by user or operating system
+Previous Daemon (49128) stopped at Tue May 26 21:59:49 CST 2026 by user or operating system
+Previous Daemon (38072) stopped at Tue May 26 22:00:01 CST 2026 by user or operating system
+Previous Daemon (49376) stopped at Tue May 26 22:00:17 CST 2026 by user or operating system
+Previous Daemon (35688) stopped at Tue May 26 22:00:32 CST 2026 by user or operating system
+Previous Daemon (49076) stopped at Tue May 26 22:01:09 CST 2026 by user or operating system
+Previous Daemon (40452) stopped at Tue May 26 22:01:42 CST 2026 by user or operating system
+Previous Daemon (46096) stopped at Tue May 26 22:02:00 CST 2026 by user or operating system
+Starting a Gradle Daemon, 1 incompatible and 19 stopped Daemons could not be reused, use --status for details
+Starting process 'Gradle build daemon'. Working directory: C:\Users\Wuzuantw\.gradle\daemon\9.2.0 Command: C:\Program Files\Android\Android Studio\jbr\bin\java.exe --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED -XX:MaxMetaspaceSize=384m -XX:+HeapDumpOnOutOfMemoryError -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=TW -Duser.language=zh -Duser.variant -cp C:\Users\Wuzuantw\.gradle\wrapper\dists\gradle-9.2.0-bin\11i5gvueggl8a5cioxuftxrik\gradle-9.2.0\lib\gradle-daemon-main-9.2.0.jar -javaagent:C:\Users\Wuzuantw\.gradle\wrapper\dists\gradle-9.2.0-bin\11i5gvueggl8a5cioxuftxrik\gradle-9.2.0\lib\agents\gradle-instrumentation-agent-9.2.0.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 9.2.0
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 1.437 secs.
+The client will now receive all logging from the daemon (pid: 34276). The daemon log file: C:\Users\Wuzuantw\.gradle\daemon\9.2.0\daemon-34276.out.log
+Starting build in new daemon [memory: 512 MiB]
+Using 16 worker leases.
+Operational build model parameters: {requiresToolingModels=false, parallelProjectExecution=true, configureOnDemand=false, configurationCache=false, configurationCacheParallelStore=false, configurationCacheParallelLoad=true, isolatedProjects=false, parallelProjectConfiguration=false, intermediateModelCache=false, parallelToolingApiActions=true, invalidateCoupledProjects=false, modelAsProjectDependency=false, resilientModelBuilding=false}
+Received JVM installation metadata from 'C:\Program Files\Android\Android Studio\jbr': {JAVA_HOME=C:\Program Files\Android\Android Studio\jbr, JAVA_VERSION=21.0.8, JAVA_VENDOR=JetBrains s.r.o., RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=21.0.8+-14196175-b1038.72, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=21.0.8+-14196175-b1038.72, VM_VENDOR=JetBrains s.r.o., OS_ARCH=amd64}
+Watching the file system is configured to be disabled
+File system watching is inactive
+Starting Build
+Resolved plugin [id: 'org.gradle.toolchains.foojay-resolver-convention', version: '1.0.0']
+Settings evaluated using settings file 'D:\開發\鑽石託管\Minecraft\Purpur\1.21.11\settings.gradle.kts'.
+Using local directory build cache for the root build (location = C:\Users\Wuzuantw\.gradle\caches\build-cache-1, remove unused entries = after 7 days).
+Projects loaded. Root project using build file 'D:\開發\鑽石託管\Minecraft\Purpur\1.21.11\build.gradle.kts'.
+Included projects: [root project 'purpur', project ':purpur-api', project ':purpur-server']
+
+> Configure project :
+Evaluating root project 'purpur' using build file 'D:\開發\鑽石託管\Minecraft\Purpur\1.21.11\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java']
+Resolved plugin [id: 'io.papermc.paperweight.patcher', version: '2.0.0-beta.19']
+Starting process 'command 'git''. Working directory: D:\開發\鑽石託管\Minecraft\Purpur\1.21.11 Command: git --version
+Successfully started process 'command 'git''
+paperweight-patcher v2.0.0-beta.19 (running on 'Windows 10')
+
+> Configure project :purpur-api
+Evaluating project ':purpur-api' using build file 'D:\開發\鑽石託管\Minecraft\Purpur\1.21.11\purpur-api\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java-library']
+Resolved plugin [id: 'org.gradle.maven-publish']
+Resolved plugin [id: 'org.gradle.idea']
+
+> Configure project :purpur-server
+Evaluating project ':purpur-server' using build file 'D:\開發\鑽石託管\Minecraft\Purpur\1.21.11\purpur-server\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java-library']
+Resolved plugin [id: 'org.gradle.maven-publish']
+Resolved plugin [id: 'org.gradle.idea']
+Resolved plugin [id: 'io.papermc.paperweight.core']
+Resolved plugin [id: 'io.papermc.fill.gradle', version: '1.0.10']
+Starting process 'command 'git''. Working directory: D:\開發\鑽石託管\Minecraft\Purpur\1.21.11 Command: git --version
+Successfully started process 'command 'git''
+paperweight-core v2.0.0-beta.19 (running on 'Windows 10')
+Fork order: purpur
+All projects evaluated.
+Task path ':purpur-server:applyMinecraftSourcePatches' matched project ':purpur-server'
+Task name matched 'applyMinecraftSourcePatches'
+Selected primary task 'applyMinecraftSourcePatches' from project :purpur-server
+Starting process 'command 'C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin\java.exe''. Working directory: C:\Users\Wuzuantw\.gradle\.tmp\tmp-jvm16169370487587522657probe Command: C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin\java.exe -Xmx32m -Xms32m -cp . JavaProbe
+Successfully started process 'command 'C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin\java.exe''
+Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot, JAVA_VERSION=25.0.3, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=25.0.3+9-LTS, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=25.0.3+9-LTS, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Starting process 'command 'C:\Program Files (x86)\Java\jre1.8.0_481\bin\java.exe''. Working directory: C:\Users\Wuzuantw\.gradle\.tmp\tmp-jvm10646047567389063982probe Command: C:\Program Files (x86)\Java\jre1.8.0_481\bin\java.exe -Xmx32m -Xms32m -cp . JavaProbe
+Successfully started process 'command 'C:\Program Files (x86)\Java\jre1.8.0_481\bin\java.exe''
+Received JVM installation metadata from 'C:\Program Files (x86)\Java\jre1.8.0_481': {JAVA_HOME=C:\Program Files (x86)\Java\jre1.8.0_481, JAVA_VERSION=1.8.0_481, JAVA_VENDOR=Oracle Corporation, RUNTIME_NAME=Java(TM) SE Runtime Environment, RUNTIME_VERSION=1.8.0_481-b10, VM_NAME=Java HotSpot(TM) Client VM, VM_VERSION=25.481-b10, VM_VENDOR=Oracle Corporation, OS_ARCH=x86}
+Starting process 'command 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe''. Working directory: C:\Users\Wuzuantw\.gradle\.tmp\tmp-jvm924977544448898394probe Command: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe -Xmx32m -Xms32m -cp . JavaProbe
+Successfully started process 'command 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe''
+Received JVM installation metadata from 'C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot': {JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot, JAVA_VERSION=17.0.17, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.17+10, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.17+10, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+Tasks to be executed: [task ':purpur-server:downloadMcManifest', task ':purpur-server:downloadMcVersionManifest', task ':purpur-server:downloadServerJar', task ':purpur-server:extractFromBundler', task ':purpur-server:setupMacheResources', task ':purpur-server:extractMacheResources', task ':purpur-server:applyPaperMinecraftResourcePatches', task ':purpur-server:downloadMcLibrariesSources', task ':purpur-server:downloadRuntimeClasspathSources', task ':purpur-server:indexLibraryFiles', task ':purpur-server:importPaperLibraryFiles', task ':purpur-server:downloadMappings', task ':purpur-server:macheRemapJar', task ':purpur-server:macheDecompileJar', task ':purpur-server:collectPaperATsFromPatches', task ':purpur-server:mergePaperATs', task ':purpur-server:setupMacheSources', task ':purpur-server:extractMacheSources', task ':purpur-server:applyPaperMinecraftSourcePatches', task ':purpur-server:applyPaperMinecraftFilePatches', task ':purpur-server:applyPaperMinecraftFeaturePatches', task ':purpur-server:importPurpurLibraryFiles', task ':purpur-server:collectPurpurATsFromPatches', task ':purpur-server:mergePurpurATs', task ':purpur-server:runPurpurSetup', task ':purpur-server:applyMinecraftSourcePatches']
+Tasks that were excluded: []
+Resolve mutations for :purpur-server:downloadMcManifest (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:downloadMcManifest (Thread[#141,included builds,5,main]) started.
+
+> Task :purpur-server:downloadMcManifest
+Caching disabled for task ':purpur-server:downloadMcManifest' because:
+  Task is untracked because: The Minecraft manifest is a changing resource
+Task ':purpur-server:downloadMcManifest' is not up-to-date because:
+  Task is untracked because: The Minecraft manifest is a changing resource
+Resolve mutations for :purpur-server:downloadMcVersionManifest (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:downloadMcVersionManifest (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:downloadMcVersionManifest UP-TO-DATE
+Build cache key for task ':purpur-server:downloadMcVersionManifest' is 102aad84c7ff406372656e82f8fdabbe
+Skipping task ':purpur-server:downloadMcVersionManifest' as it is up-to-date.
+Resolve mutations for :purpur-server:downloadServerJar (Thread[#141,included builds,5,main]) started.
+:purpur-server:downloadServerJar (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:downloadServerJar UP-TO-DATE
+Build cache key for task ':purpur-server:downloadServerJar' is 1717f3c6c66525b2f7ec879e61b0792a
+Skipping task ':purpur-server:downloadServerJar' as it is up-to-date.
+Resolve mutations for :purpur-server:extractFromBundler (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:extractFromBundler (Thread[#141,included builds,5,main]) started.
+
+> Task :purpur-server:extractFromBundler UP-TO-DATE
+Caching disabled for task ':purpur-server:extractFromBundler' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:extractFromBundler' as it is up-to-date.
+Resolve mutations for :purpur-server:setupMacheResources (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:setupMacheResources (Thread[#141,included builds,5,main]) started.
+
+> Task :purpur-server:setupMacheResources UP-TO-DATE
+Build cache key for task ':purpur-server:setupMacheResources' is a6c08bb4e4650f4bfbd3808f7272f9f3
+Skipping task ':purpur-server:setupMacheResources' as it is up-to-date.
+Resolve mutations for :purpur-server:extractMacheResources (Thread[#141,included builds,5,main]) started.
+:purpur-server:extractMacheResources (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:extractMacheResources UP-TO-DATE
+Caching disabled for task ':purpur-server:extractMacheResources' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:extractMacheResources' as it is up-to-date.
+Resolve mutations for :purpur-server:applyPaperMinecraftResourcePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:applyPaperMinecraftResourcePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:applyPaperMinecraftResourcePatches UP-TO-DATE
+Caching disabled for task ':purpur-server:applyPaperMinecraftResourcePatches' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:applyPaperMinecraftResourcePatches' as it is up-to-date.
+Resolve mutations for :purpur-server:downloadMcLibrariesSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:downloadMcLibrariesSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:downloadMcLibrariesSources UP-TO-DATE
+Build cache key for task ':purpur-server:downloadMcLibrariesSources' is 06caa835a5aee10c42bab51186faa968
+Skipping task ':purpur-server:downloadMcLibrariesSources' as it is up-to-date.
+Resolve mutations for :purpur-server:downloadRuntimeClasspathSources (Thread[#141,included builds,5,main]) started.
+:purpur-server:downloadRuntimeClasspathSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:downloadRuntimeClasspathSources UP-TO-DATE
+Build cache key for task ':purpur-server:downloadRuntimeClasspathSources' is eed6c66cd5566abefcbb9db4841830ec
+Skipping task ':purpur-server:downloadRuntimeClasspathSources' as it is up-to-date.
+Resolve mutations for :purpur-server:indexLibraryFiles (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:indexLibraryFiles (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:indexLibraryFiles UP-TO-DATE
+Caching disabled for task ':purpur-server:indexLibraryFiles' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:indexLibraryFiles' as it is up-to-date.
+Resolve mutations for :purpur-server:importPaperLibraryFiles (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:importPaperLibraryFiles (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:importPaperLibraryFiles UP-TO-DATE
+Caching disabled for task ':purpur-server:importPaperLibraryFiles' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:importPaperLibraryFiles' as it is up-to-date.
+Resolve mutations for :purpur-server:downloadMappings (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:downloadMappings (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:downloadMappings UP-TO-DATE
+Build cache key for task ':purpur-server:downloadMappings' is 7189ef392e402d2f5f789ec28681c238
+Skipping task ':purpur-server:downloadMappings' as it is up-to-date.
+Resolve mutations for :purpur-server:macheRemapJar (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:macheRemapJar (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:macheRemapJar UP-TO-DATE
+Build cache key for task ':purpur-server:macheRemapJar' is 96c877ce6603c0d47c169cd3c6a6fa8a
+Skipping task ':purpur-server:macheRemapJar' as it is up-to-date.
+Resolve mutations for :purpur-server:macheDecompileJar (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:macheDecompileJar (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:macheDecompileJar UP-TO-DATE
+Build cache key for task ':purpur-server:macheDecompileJar' is 569ba6a0febb95842cadc64487873f7e
+Skipping task ':purpur-server:macheDecompileJar' as it is up-to-date.
+Resolve mutations for :purpur-server:collectPaperATsFromPatches (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:collectPaperATsFromPatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:collectPaperATsFromPatches UP-TO-DATE
+Caching disabled for task ':purpur-server:collectPaperATsFromPatches' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:collectPaperATsFromPatches' as it is up-to-date.
+Resolve mutations for :purpur-server:mergePaperATs (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:mergePaperATs (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:mergePaperATs UP-TO-DATE
+Caching disabled for task ':purpur-server:mergePaperATs' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:mergePaperATs' as it is up-to-date.
+Resolve mutations for :purpur-server:setupMacheSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:setupMacheSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:setupMacheSources UP-TO-DATE
+Build cache key for task ':purpur-server:setupMacheSources' is 9265a256b78123ffb4115fd95a95bafb
+Skipping task ':purpur-server:setupMacheSources' as it is up-to-date.
+Resolve mutations for :purpur-server:extractMacheSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:extractMacheSources (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:extractMacheSources UP-TO-DATE
+Caching disabled for task ':purpur-server:extractMacheSources' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:extractMacheSources' as it is up-to-date.
+Resolve mutations for :purpur-server:applyPaperMinecraftSourcePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:applyPaperMinecraftSourcePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:applyPaperMinecraftSourcePatches UP-TO-DATE
+Caching disabled for task ':purpur-server:applyPaperMinecraftSourcePatches' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:applyPaperMinecraftSourcePatches' as it is up-to-date.
+Resolve mutations for :purpur-server:applyPaperMinecraftFilePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:applyPaperMinecraftFilePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:applyPaperMinecraftFilePatches UP-TO-DATE
+Skipping task ':purpur-server:applyPaperMinecraftFilePatches' as it has no actions.
+Resolve mutations for :purpur-server:applyPaperMinecraftFeaturePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:applyPaperMinecraftFeaturePatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+
+> Task :purpur-server:applyPaperMinecraftFeaturePatches UP-TO-DATE
+Caching disabled for task ':purpur-server:applyPaperMinecraftFeaturePatches' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:applyPaperMinecraftFeaturePatches' as it is up-to-date.
+Resolve mutations for :purpur-server:importPurpurLibraryFiles (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:importPurpurLibraryFiles (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:importPurpurLibraryFiles UP-TO-DATE
+Caching disabled for task ':purpur-server:importPurpurLibraryFiles' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:importPurpurLibraryFiles' as it is up-to-date.
+Resolve mutations for :purpur-server:collectPurpurATsFromPatches (Thread[#146,Execution worker Thread 5,5,main]) started.
+:purpur-server:collectPurpurATsFromPatches (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:collectPurpurATsFromPatches UP-TO-DATE
+Caching disabled for task ':purpur-server:collectPurpurATsFromPatches' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:collectPurpurATsFromPatches' as it is up-to-date.
+Resolve mutations for :purpur-server:mergePurpurATs (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:mergePurpurATs (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:mergePurpurATs UP-TO-DATE
+Caching disabled for task ':purpur-server:mergePurpurATs' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:mergePurpurATs' as it is up-to-date.
+Resolve mutations for :purpur-server:runPurpurSetup (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:runPurpurSetup (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:runPurpurSetup UP-TO-DATE
+Caching disabled for task ':purpur-server:runPurpurSetup' because:
+  Caching has not been enabled for the task
+Skipping task ':purpur-server:runPurpurSetup' as it is up-to-date.
+Resolve mutations for :purpur-server:applyMinecraftSourcePatches (Thread[#145,Execution worker Thread 4,5,main]) started.
+:purpur-server:applyMinecraftSourcePatches (Thread[#145,Execution worker Thread 4,5,main]) started.
+
+> Task :purpur-server:applyMinecraftSourcePatches FAILED
+Caching disabled for task ':purpur-server:applyMinecraftSourcePatches' because:
+  Task is untracked because: Always run when requested
+Task ':purpur-server:applyMinecraftSourcePatches' is not up-to-date because:
+  Task is untracked because: Always run when requested
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':purpur-server:applyMinecraftSourcePatches'.
+> Patch engine failure
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to generate a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 11s
+25 actionable tasks: 2 executed, 23 up-to-date

@@ -615,4 +615,69 @@ public class PurpurConfig {
             startupCommands.add(command);
         });
     }
+
+    // Purpur start - Region-based Multi-threaded World Ticking
+    /**
+     * Master on/off switch for parallel world ticking.
+     * When {@code false} (the default), all worlds tick sequentially on the main thread
+     * exactly as in vanilla Purpur/Paper — no behaviour change, no risk.
+     * Set to {@code true} only after validating plugin compatibility.
+     */
+    public static boolean multiThreadedWorldTickEnabled = false;
+
+    /**
+     * Number of parallel worker threads used by
+     * {@link org.purpurmc.purpur.thread.MultiThreadedTicker}.
+     *
+     * <p>Default: {@code max(1, availableProcessors - 2)}.
+     * Recommended: one thread per expected concurrently-loaded world, capped at
+     * (physical cores - 2) to leave headroom for Netty, I/O, and OS scheduling.
+     * Setting this higher than the number of loaded worlds wastes resources.
+     */
+    public static int multiThreadedWorldTickThreadCount =
+            Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
+
+    /**
+     * When {@code true}, extra FINE-level log lines are emitted each tick showing
+     * how many worlds were dispatched and how many TaskQueue tasks were drained.
+     * Disable in production; useful when diagnosing deadlocks or TPS issues.
+     */
+    public static boolean multiThreadedWorldTickDebug = false;
+
+    /**
+     * Maximum number of {@link org.purpurmc.purpur.thread.TaskQueue} tasks drained by
+     * the main thread after each world-tick batch.
+     *
+     * <p>The default {@link Integer#MAX_VALUE} drains the entire queue every tick,
+     * keeping plugin-API latency minimal. Lower this (e.g. to {@code 200}) if a
+     * misbehaving plugin floods the queue and the drain itself is consuming too much
+     * of the tick budget.
+     */
+    public static int taskQueueMaxDrainPerTick = Integer.MAX_VALUE;
+
+    private static void multiThreadedTickSettings() {
+        multiThreadedWorldTickEnabled = getBoolean(
+                "settings.multi-thread-world-tick.enabled", multiThreadedWorldTickEnabled);
+        multiThreadedWorldTickThreadCount = getInt(
+                "settings.multi-thread-world-tick.thread-count", multiThreadedWorldTickThreadCount);
+        if (multiThreadedWorldTickThreadCount < 1) {
+            Bukkit.getLogger().warning(
+                "[Purpur] multi-thread-world-tick.thread-count must be >= 1; resetting to 1.");
+            multiThreadedWorldTickThreadCount = 1;
+        }
+        multiThreadedWorldTickDebug = getBoolean(
+                "settings.multi-thread-world-tick.debug", multiThreadedWorldTickDebug);
+        taskQueueMaxDrainPerTick = getInt(
+                "settings.multi-thread-world-tick.task-queue-max-drain-per-tick",
+                taskQueueMaxDrainPerTick);
+        if (taskQueueMaxDrainPerTick < 1) {
+            taskQueueMaxDrainPerTick = Integer.MAX_VALUE;
+        }
+        if (multiThreadedWorldTickEnabled) {
+            Bukkit.getLogger().info("[Purpur] Multi-threaded world ticking ENABLED with "
+                    + multiThreadedWorldTickThreadCount + " thread(s). "
+                    + "Ensure all plugins are compatible before using in production.");
+        }
+    }
+    // Purpur end - Region-based Multi-threaded World Ticking
 }

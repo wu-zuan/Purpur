@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DM-WuzuanTW <wuzuantw@gmail.com>
+Date: Tue, 26 May 2026 23:09:15 +0800
+Subject: [PATCH] Fix 1.21.11 compilation errors
+
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index c23ae6f5e939c3a73ddb788517e61e3dc75a6a46..face7c22c7180f679e10ae86e132f7d00f2140f6 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -2310,11 +2310,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         return this.serverThread;
+     }
+ 
+-    @Override
+-    public boolean isSameThread() {
+-        if (super.isSameThread()) return true;
+-        return org.purpurmc.purpur.thread.ThreadContext.isRegionThread();
+-    }
++
+ 
+     public int getCompressionThreshold() {
+         return 256;
+@@ -2770,7 +2766,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     // Paper start - rewrite chunk system
+     @Override
+     public boolean isSameThread() {
+-        return ca.spottedleaf.moonrise.common.util.TickThread.isTickThread();
++        return ca.spottedleaf.moonrise.common.util.TickThread.isTickThread() || org.purpurmc.purpur.thread.ThreadContext.isRegionThread(); // Purpur - Region-based Multi-threaded World Ticking
+     }
+     // Paper end - rewrite chunk system
+ 

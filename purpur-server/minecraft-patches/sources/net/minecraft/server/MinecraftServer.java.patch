@@ -8,12 +8,15 @@
      public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
      public int autosavePeriod;
      // Paper - don't store the vanilla dispatcher
-@@ -306,6 +_,8 @@
+@@ -306,6 +_,11 @@
      public boolean isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
      private final Set<String> pluginsBlockingSleep = new java.util.HashSet<>(); // Paper - API to allow/disallow tick sleeping
      public static final long SERVER_INIT = System.nanoTime(); // Paper - Lag compensation
 +    public boolean lagging = false; // Purpur - Lagging threshold
 +    protected boolean upnp = false; // Purpur - UPnP Port Forwarding
++    // Purpur start - Region-based Multi-threaded World Ticking
++    public org.purpurmc.purpur.thread.MultiThreadedTicker multiThreadedTicker = null;
++    // Purpur end - Region-based Multi-threaded World Ticking
      // Paper start - improve tick loop
      public final ca.spottedleaf.moonrise.common.time.TickData tickTimes1s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(1L));
      public final ca.spottedleaf.moonrise.common.time.TickData tickTimes5s  = new ca.spottedleaf.moonrise.common.time.TickData(java.util.concurrent.TimeUnit.SECONDS.toNanos(5L));
@@ -25,7 +28,7 @@
              getTPS(this.tickTimes1m, interval),
              getTPS(this.tickTimes5m, interval),
              getTPS(this.tickTimes15m, interval)
-@@ -1014,6 +_,15 @@
+@@ -1014,6 +_,21 @@
  
          LOGGER.info("Stopping server");
          Commands.COMMAND_SENDING_POOL.shutdownNow(); // Paper - Perf: Async command map building; Shutdown and don't bother finishing
@@ -38,6 +41,12 @@
 +            }
 +        }
 +        // Purpur end - UPnP Port Forwarding
++        // Purpur start - Region-based Multi-threaded World Ticking: shutdown ticker
++        if (this.multiThreadedTicker != null) {
++            this.multiThreadedTicker.shutdown();
++            this.multiThreadedTicker = null;
++        }
++        // Purpur end - Region-based Multi-threaded World Ticking
          // CraftBukkit start
          if (this.server != null) {
              this.server.spark.disable(); // Paper - spark
@@ -50,7 +59,7 @@
          this.isRestarting = isRestarting;
          this.hasLoggedStop = true; // Paper - Debugging
          if (isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Server stopped"); // Paper - Debugging
-@@ -1284,11 +_,21 @@
+@@ -1284,11 +_,28 @@
              }
              // Paper end - Add onboarding message for initial server start
              // Paper start - Improve outdated version checking
@@ -69,6 +78,13 @@
 +                }
 +            }
 +            // Purpur end - config for startup commands
++
++            // Purpur start - Region-based Multi-threaded World Ticking: init ticker + register main thread
++            org.purpurmc.purpur.thread.ThreadContext.setMainThread(Thread.currentThread());
++            this.multiThreadedTicker = new org.purpurmc.purpur.thread.MultiThreadedTicker(
++                org.purpurmc.purpur.PurpurConfig.multiThreadedWorldTickThreadCount
++            );
++            // Purpur end - Region-based Multi-threaded World Ticking
 +
              while (this.running) {
                  final long tickStart = System.nanoTime(); // Paper - improve tick loop
@@ -94,6 +110,34 @@
                      continue;
                  }
                  ServerPlayer entityplayer = (ServerPlayer) entityhuman;
+@@ -1799,6 +_,27 @@
+         }
+ 
+         this.isIteratingOverLevels = true; // Paper - Throw exception on world create while being ticked
++        if (org.purpurmc.purpur.PurpurConfig.multiThreadedWorldTickEnabled && this.multiThreadedTicker != null) {
++            java.util.List<ServerLevel> worlds = new java.util.ArrayList<>();
++            for (ServerLevel serverLevel : this.getAllLevels()) {
++                serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0;
++                serverLevel.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0;
++                serverLevel.updateLagCompensationTick();
++                net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = serverLevel.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
++                worlds.add(serverLevel);
++            }
++            this.multiThreadedTicker.tickWorlds(worlds, level -> {
++                try {
++                    level.tick(hasTimeLeft);
++                } catch (Throwable var7) {
++                    CrashReport crashReport = CrashReport.forThrowable(var7, "Exception ticking world");
++                    level.fillReportDetails(crashReport);
++                    throw new ReportedException(crashReport);
++                } finally {
++                    level.explosionDensityCache.clear();
++                }
++            });
++        } else
+         for (ServerLevel serverLevel : this.getAllLevels()) {
+             serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
+             serverLevel.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
 @@ -1952,7 +_,7 @@
  
      @DontObfuscate
@@ -103,3 +147,16 @@
      }
  
      public SystemReport fillSystemReport(SystemReport systemReport) {
+@@ -2234,6 +_,12 @@
+     @Override
+     public Thread getRunningThread() {
+         return this.serverThread;
++    }
++
++    @Override
++    public boolean isSameThread() {
++        if (super.isSameThread()) return true;
++        return org.purpurmc.purpur.thread.ThreadContext.isRegionThread();
+     }
+ 
+     public int getCompressionThreshold() {

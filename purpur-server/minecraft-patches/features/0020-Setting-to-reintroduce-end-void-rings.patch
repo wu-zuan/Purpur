@@ -5,13 +5,13 @@ Subject: [PATCH] Setting to reintroduce end void rings
 
 
 diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
-index 9f3aec24bd8aa75ea116375c1cf0a54bcc229fa2..4af19f9f5152e9f6386e375a1ac5280ce00f48ea 100644
+index 1cce46f37b9f7c47c5d1436ff070ac29550a3872..c23ae6f5e939c3a73ddb788517e61e3dc75a6a46 100644
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
-@@ -1313,6 +1313,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-                 }
-             }
-             // Purpur end - config for startup commands
+@@ -1329,6 +1329,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+                 org.purpurmc.purpur.PurpurConfig.multiThreadedWorldTickThreadCount
+             );
+             // Purpur end - Region-based Multi-threaded World Ticking
 +            // Purpur start - Migrate Setting to reintroduce end void rings
 +            if (org.purpurmc.purpur.configuration.transformation.FarEndTerrainGenerationMigration.HAS_BEEN_REGISTERED) {
 +                try {
