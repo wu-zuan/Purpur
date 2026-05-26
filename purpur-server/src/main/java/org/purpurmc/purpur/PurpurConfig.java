@@ -616,6 +616,11 @@ public class PurpurConfig {
         });
     }
 
+    public static boolean datapackAsyncOffloading = true;
+    private static void datapackAsyncOffloading() {
+        datapackAsyncOffloading = getBoolean("settings.datapack-async-offloading", datapackAsyncOffloading);
+    }
+
     // Purpur start - Region-based Multi-threaded World Ticking
     /**
      * Master on/off switch for parallel world ticking.
