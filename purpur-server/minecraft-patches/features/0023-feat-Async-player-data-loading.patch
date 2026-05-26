@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DM-WuzuanTW <wuzuantw@gmail.com>
+Date: Wed, 27 May 2026 01:18:34 +0800
+Subject: [PATCH] feat: Async player data loading
+
+
+diff --git a/net/minecraft/server/network/config/PrepareSpawnTask.java b/net/minecraft/server/network/config/PrepareSpawnTask.java
+index 5014840bf5d7ef53a4fea8aa6f3b25eb4033ff96..ae52d67d55970c8eb0d92a23163ebf0e45c460a2 100644
+--- a/net/minecraft/server/network/config/PrepareSpawnTask.java
++++ b/net/minecraft/server/network/config/PrepareSpawnTask.java
+@@ -35,6 +35,8 @@ public class PrepareSpawnTask implements ConfigurationTask {
+     final NameAndId nameAndId;
+     final LevelLoadListener loadListener;
+     private PrepareSpawnTask.@Nullable State state;
++    private Optional<net.minecraft.nbt.CompoundTag> cachedPlayerData = Optional.empty();
++    private boolean isDataLoaded = false;
+ 
+     // Paper start - passthrough profile and packet listener
+     private final com.mojang.authlib.GameProfile profile;
+@@ -51,11 +53,17 @@ public class PrepareSpawnTask implements ConfigurationTask {
+ 
+     @Override
+     public void start(Consumer<Packet<?>> task) {
++        CompletableFuture<Optional<net.minecraft.nbt.CompoundTag>> future = CompletableFuture.supplyAsync(() -> {
++            return this.server.getPlayerList().loadPlayerData(this.nameAndId);
++        }, io.papermc.paper.connection.PaperConfigurationTask.CONFIGURATION_POOL);
++        this.state = new PrepareSpawnTask.LoadingData(future);
++    }
++
++    private void onDataLoaded(Optional<net.minecraft.nbt.CompoundTag> data) {
++        this.cachedPlayerData = data;
++        this.isDataLoaded = true;
+         try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(LOGGER)) {
+-            Optional<ValueInput> optional = this.server
+-                .getPlayerList()
+-                .loadPlayerData(this.nameAndId)
+-                .map(compoundTag -> TagValueInput.create(scopedCollector, this.server.registryAccess(), compoundTag));
++            Optional<ValueInput> optional = data.map(compoundTag -> TagValueInput.create(scopedCollector, this.server.registryAccess(), compoundTag));
+             // Paper start - move logic in Entity to here, to use bukkit supplied world UUID & reset to main world spawn if no valid world is found
+             this.newPlayer = optional.isEmpty(); // New players don't have saved data!
+             net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> resourceKey = null; // Paper
+@@ -119,6 +127,14 @@ public class PrepareSpawnTask implements ConfigurationTask {
+     public boolean tick() {
+         return switch (this.state) {
+             case null -> false;
++            case PrepareSpawnTask.LoadingData loadingData -> {
++                if (loadingData.isDone()) {
++                    this.onDataLoaded(loadingData.get());
++                    yield false;
++                } else {
++                    yield false;
++                }
++            }
+             case PrepareSpawnTask.Preparing preparing -> {
+                 PrepareSpawnTask.Ready ready = preparing.tick();
+                 if (ready != null) {
+@@ -280,21 +296,38 @@ public class PrepareSpawnTask implements ConfigurationTask {
+ 
+             ServerPlayer var7;
+             try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(serverPlayer.problemPath(), PrepareSpawnTask.LOGGER)) {
+-                Optional<ValueInput> optional = PrepareSpawnTask.this.server
+-                    .getPlayerList()
+-                    .loadPlayerData(PrepareSpawnTask.this.nameAndId)
+-                    // CraftBukkit start
+-                    .map(tag -> {
+-                        org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer = serverPlayer.getBukkitEntity();
+-                        // Only update first played if it is older than the one we have
+-                        long modified = new java.io.File(net.minecraft.server.network.config.PrepareSpawnTask.this.server.playerDataStorage.getPlayerDir(), serverPlayer.getStringUUID() + ".dat").lastModified();
+-                        if (modified < craftPlayer.getFirstPlayed()) {
+-                            craftPlayer.setFirstPlayed(modified);
+-                        }
+-                        return tag;
+-                    })
+-                    // CraftBukkit end
+-                    .map(compoundTag -> TagValueInput.create(scopedCollector, PrepareSpawnTask.this.server.registryAccess(), compoundTag));
++                Optional<ValueInput> optional;
++                if (PrepareSpawnTask.this.isDataLoaded) {
++                    optional = PrepareSpawnTask.this.cachedPlayerData
++                        // CraftBukkit start
++                        .map(tag -> {
++                            org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer = serverPlayer.getBukkitEntity();
++                            // Only update first played if it is older than the one we have
++                            long modified = new java.io.File(net.minecraft.server.network.config.PrepareSpawnTask.this.server.playerDataStorage.getPlayerDir(), serverPlayer.getStringUUID() + ".dat").lastModified();
++                            if (modified < craftPlayer.getFirstPlayed()) {
++                                craftPlayer.setFirstPlayed(modified);
++                            }
++                            return tag;
++                        })
++                        // CraftBukkit end
++                        .map(compoundTag -> TagValueInput.create(scopedCollector, PrepareSpawnTask.this.server.registryAccess(), compoundTag));
++                } else {
++                    optional = PrepareSpawnTask.this.server
++                        .getPlayerList()
++                        .loadPlayerData(PrepareSpawnTask.this.nameAndId)
++                        // CraftBukkit start
++                        .map(tag -> {
++                            org.bukkit.craftbukkit.entity.CraftPlayer craftPlayer = serverPlayer.getBukkitEntity();
++                            // Only update first played if it is older than the one we have
++                            long modified = new java.io.File(net.minecraft.server.network.config.PrepareSpawnTask.this.server.playerDataStorage.getPlayerDir(), serverPlayer.getStringUUID() + ".dat").lastModified();
++                            if (modified < craftPlayer.getFirstPlayed()) {
++                                craftPlayer.setFirstPlayed(modified);
++                            }
++                            return tag;
++                        })
++                        // CraftBukkit end
++                        .map(compoundTag -> TagValueInput.create(scopedCollector, PrepareSpawnTask.this.server.registryAccess(), compoundTag));
++                }
+                 optional.ifPresent(serverPlayer::load);
+                 // CraftBukkit start - Better rename detection
+                 if (optional.isPresent()) {
+@@ -319,6 +352,22 @@ public class PrepareSpawnTask implements ConfigurationTask {
+         }
+     }
+ 
+-    sealed interface State permits PrepareSpawnTask.Preparing, PrepareSpawnTask.Ready {
++    final class LoadingData implements PrepareSpawnTask.State {
++        private final CompletableFuture<Optional<net.minecraft.nbt.CompoundTag>> dataFuture;
++
++        LoadingData(CompletableFuture<Optional<net.minecraft.nbt.CompoundTag>> dataFuture) {
++            this.dataFuture = dataFuture;
++        }
++
++        public Optional<net.minecraft.nbt.CompoundTag> get() {
++            return this.dataFuture.join();
++        }
++
++        public boolean isDone() {
++            return this.dataFuture.isDone();
++        }
++    }
++
++    sealed interface State permits PrepareSpawnTask.LoadingData, PrepareSpawnTask.Preparing, PrepareSpawnTask.Ready {
+     }
+ }
