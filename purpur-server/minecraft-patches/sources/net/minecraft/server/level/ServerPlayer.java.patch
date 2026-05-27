@@ -151,7 +151,13 @@
      public void resetLastActionTime() {
          this.lastActionTime = Util.getMillis();
 -    }
-+        this.setAfk(false); // Purpur - AFK API
++    // Purpur start - AFK API: only call setAfk when the player is actually AFK,
++    // breaking the resetLastActionTime → setAfk(false) → resetLastActionTime
++    // recursion and the costly updateSleepingPlayerList() on every player action.
++        if (this.isAfk) {
++            this.setAfk(false);
++        }
++    // Purpur end - AFK API
 +    }
 +
 +    // Purpur start - AFK API

@@ -24,16 +24,22 @@
      // Paper start - retain certain values
      public @Nullable String playerBrand;
      public final java.util.Set<String> pluginMessagerChannels;
-@@ -105,6 +_,18 @@
+@@ -105,6 +_,24 @@
          // Paper start - improve keepalives
          long now = System.nanoTime();
          io.papermc.paper.util.KeepAlive.PendingKeepAlive pending = this.keepAlive.pendingKeepAlives.peek();
 +        // Purpur start - Alternative Keepalive Handling
 +        if (org.purpurmc.purpur.PurpurConfig.useAlternateKeepAlive) {
 +            if (this.keepAlivePending && !keepAlives.isEmpty() && keepAlives.contains(packet.getId())) {
-+                int ping = (int) (Util.getMillis() - packet.getId());
-+                int updatedLatency = (this.latency * 3 + ping) / 4;
-+                this.latency = updatedLatency;
++                long rawPing = Util.getMillis() - packet.getId();
++                // Purpur - Skip updating latency for anomalously high values caused by join/respawn packet floods.
++                // KeepAlive packets sent before a respawn are delayed behind chunk & respawn packets;
++                // their round-trip time is meaningless and would display thousands of ms to the player.
++                if (rawPing >= 0 && rawPing < 10000L) {
++                    int ping = (int) rawPing;
++                    int updatedLatency = (this.latency * 3 + ping) / 4;
++                    this.latency = updatedLatency;
++                }
 +                this.keepAlivePending = false;
 +                keepAlives.clear(); // we got a valid response, lets roll with it and forget the rest
 +            }
@@ -80,3 +86,22 @@
          if (this.checkIfClosed(millis) && !this.processedDisconnect) {
              long currTime = System.nanoTime();
  
+@@ -_,3 +_,20 @@
+     public int latency() {
+         return this.latency;
+     }
++
++    // Purpur start - Reset keepalive state on player join/respawn to avoid false ping spikes
++    /**
++     * Clears any pending keepalive timestamps accumulated before a player join
++     * or respawn event. Without this, stale timestamps from before the
++     * respawn/join packet flood remain in the queue and produce multi-second
++     * fake ping values when the client finally acknowledges them.
++     */
++    public void resetKeepAliveForRespawn() {
++        if (org.purpurmc.purpur.PurpurConfig.useAlternateKeepAlive) {
++            this.keepAlivePending = false;
++            this.keepAlives.clear();
++        }
++    }
++    // Purpur end - Reset keepalive state on player join/respawn
