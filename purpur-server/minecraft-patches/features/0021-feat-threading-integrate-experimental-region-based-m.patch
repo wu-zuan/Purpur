@@ -1,0 +1,153 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DM-WuzuanTW <wuzuantw@gmail.com>
+Date: Tue, 26 May 2026 23:34:10 +0800
+Subject: [PATCH] feat(threading): integrate experimental region-based
+ multi-threading framework into server world tick
+
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index 1c064e1d2edcda5d0b10fb3cc3417937ac0b3835..c094f1d0feab0532d6d3c96242491128fe2ba5a7 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -248,6 +248,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     protected final Services services;
+     private long lastServerStatus;
+     public final Thread serverThread;
++    // Purpur start - Region-based Multi-threading fields
++    private org.purpurmc.purpur.threading.MultiThreadedTicker multiThreadedTicker;
++    public org.purpurmc.purpur.threading.MultiThreadedTicker getMultiThreadedTicker() { return this.multiThreadedTicker; }
++    // Purpur end - Region-based Multi-threading fields
+     private long lastTickNanos = Util.getNanos();
+     private long taskExecutionStartNanos = Util.getNanos();
+     private long idleTimeNanos;
+@@ -999,6 +1003,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+ 
+         LOGGER.info("Stopping server");
+         Commands.COMMAND_SENDING_POOL.shutdownNow(); // Paper - Perf: Async command map building; Shutdown and don't bother finishing
++        // Purpur start - Region-based Multi-threading shutdown
++        if (this.multiThreadedTicker != null) {
++            this.multiThreadedTicker.shutdown();
++            this.multiThreadedTicker = null;
++        }
++        // Purpur end - Region-based Multi-threading shutdown
+         // Purpur start - UPnP Port Forwarding
+         if (upnp) {
+             if (dev.omega24.upnp4j.UPnP4J.close(this.getPort(), dev.omega24.upnp4j.util.Protocol.TCP)) {
+@@ -1223,6 +1233,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             }
+             // Purpur end - config for startup commands
+ 
++            // Purpur start - Region-based Multi-threading initialization
++            org.purpurmc.purpur.threading.ThreadContext.initialize(Thread.currentThread());
++            if (org.purpurmc.purpur.PurpurConfig.multiThreadingEnabled) {
++                this.multiThreadedTicker = new org.purpurmc.purpur.threading.MultiThreadedTicker(
++                    org.purpurmc.purpur.PurpurConfig.regionThreadCount
++                );
++                this.multiThreadedTicker.setEnabled(true);
++                LOGGER.info("[Purpur] Region-based multi-threading initialized with {} threads",
++                    this.multiThreadedTicker.getThreadCount());
++            }
++            // Purpur end - Region-based Multi-threading initialization
++
+             while (this.running) {
+                 long l;
+                 if (!this.isPaused() && this.tickRateManager.isSprinting() && this.tickRateManager.checkShouldSprintThisTick()) {
+@@ -1740,34 +1762,53 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         }
+ 
+         this.isIteratingOverLevels = true; // Paper - Throw exception on world create while being ticked
+-        for (ServerLevel serverLevel : this.getAllLevels()) {
+-            serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
+-            serverLevel.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
+-            serverLevel.updateLagCompensationTick(); // Paper - lag compensation
+-            net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = serverLevel.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers
+-            serverLevel.hasRidableMoveEvent = org.purpurmc.purpur.event.entity.RidableMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Purpur - Ridables
+-            profilerFiller.push(() -> serverLevel + " " + serverLevel.dimension().location());
+-            /* Drop global time updates
+-            if (this.tickCount % 20 == 0) {
+-                profilerFiller.push("timeSync");
+-                this.synchronizeTime(serverLevel);
+-                profilerFiller.pop();
+-            }
+-            // CraftBukkit end */
++        if (this.multiThreadedTicker != null && this.multiThreadedTicker.isEnabled()) {
++            this.multiThreadedTicker.tickAllWorlds(hasTimeLeft, (serverLevel, shouldKeepTicking) -> {
++                serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
++                serverLevel.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
++                serverLevel.updateLagCompensationTick(); // Paper - lag compensation
++                net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = serverLevel.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers
++                serverLevel.hasRidableMoveEvent = org.purpurmc.purpur.event.entity.RidableMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Purpur - Ridables
++                
++                try {
++                    serverLevel.tick(shouldKeepTicking);
++                } catch (Throwable var7) {
++                    CrashReport crashReport = CrashReport.forThrowable(var7, "Exception ticking world");
++                    serverLevel.fillReportDetails(crashReport);
++                    throw new ReportedException(crashReport);
++                }
++                serverLevel.explosionDensityCache.clear(); // Paper - Optimize explosions
++            });
++        } else {
++            for (ServerLevel serverLevel : this.getAllLevels()) {
++                serverLevel.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - BlockPhysicsEvent
++                serverLevel.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper - Add EntityMoveEvent
++                serverLevel.updateLagCompensationTick(); // Paper - lag compensation
++                net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = serverLevel.paperConfig().hopper.disableMoveEvent || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper - Perf: Optimize Hoppers
++                serverLevel.hasRidableMoveEvent = org.purpurmc.purpur.event.entity.RidableMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Purpur - Ridables
++                profilerFiller.push(() -> serverLevel + " " + serverLevel.dimension().location());
++                /* Drop global time updates
++                if (this.tickCount % 20 == 0) {
++                    profilerFiller.push("timeSync");
++                    this.synchronizeTime(serverLevel);
++                    profilerFiller.pop();
++                }
++                // CraftBukkit end */
+ 
+-            profilerFiller.push("tick");
++                profilerFiller.push("tick");
+ 
+-            try {
+-                serverLevel.tick(hasTimeLeft);
+-            } catch (Throwable var7) {
+-                CrashReport crashReport = CrashReport.forThrowable(var7, "Exception ticking world");
+-                serverLevel.fillReportDetails(crashReport);
+-                throw new ReportedException(crashReport);
+-            }
++                try {
++                    serverLevel.tick(hasTimeLeft);
++                } catch (Throwable var7) {
++                    CrashReport crashReport = CrashReport.forThrowable(var7, "Exception ticking world");
++                    serverLevel.fillReportDetails(crashReport);
++                    throw new ReportedException(crashReport);
++                }
+ 
+-            profilerFiller.pop();
+-            profilerFiller.pop();
+-            serverLevel.explosionDensityCache.clear(); // Paper - Optimize explosions
++                profilerFiller.pop();
++                profilerFiller.pop();
++                serverLevel.explosionDensityCache.clear(); // Paper - Optimize explosions
++            }
+         }
+         this.isIteratingOverLevels = false; // Paper - Throw exception on world create while being ticked
+ 
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 3c7159d0981c948e71a5612ba4083accb5849ed4..c4d9e230aec9c0d59fe444de37c9979f9ca43e66 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -208,6 +208,15 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     private final boolean tickTime;
+     private double preciseTime; // Purpur - Configurable daylight cycle
+     private boolean forceTime; // Purpur - Configurable daylight cycle
++    // Purpur start - Region-based Multi-threading
++    private org.purpurmc.purpur.threading.RegionContext regionContext;
++    public org.purpurmc.purpur.threading.RegionContext getRegionContext() {
++        if (this.regionContext == null) {
++            this.regionContext = new org.purpurmc.purpur.threading.RegionContext(this);
++        }
++        return this.regionContext;
++    }
++    // Purpur end - Region-based Multi-threading
+     private final RandomSequences randomSequences;
+ 
+     // CraftBukkit start
