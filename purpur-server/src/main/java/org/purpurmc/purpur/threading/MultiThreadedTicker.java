@@ -103,7 +103,7 @@ public class MultiThreadedTicker {
      * Creates a named daemon thread for the worker pool.
      */
     private Thread createWorkerThread(Runnable runnable) {
-        Thread thread = new Thread(runnable, "RegionTicker-" + THREAD_COUNTER.getAndIncrement());
+        Thread thread = new ca.spottedleaf.moonrise.common.util.TickThread(runnable, "RegionTicker-" + THREAD_COUNTER.getAndIncrement());
         thread.setDaemon(true);
         thread.setPriority(Thread.NORM_PRIORITY);
         thread.setUncaughtExceptionHandler((t, e) -> {
