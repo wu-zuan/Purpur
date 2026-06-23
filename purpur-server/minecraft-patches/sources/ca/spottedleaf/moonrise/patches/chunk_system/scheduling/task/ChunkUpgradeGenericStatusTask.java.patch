@@ -1,0 +1,22 @@
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/task/ChunkUpgradeGenericStatusTask.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/task/ChunkUpgradeGenericStatusTask.java
+@@ -44,7 +_,10 @@
+         this.fromStatus = chunk.getPersistedStatus();
+         this.toStatus = toStatus;
+         this.neighbours = neighbours;
+-        if (((ChunkSystemChunkStatus)this.toStatus).moonrise$isParallelCapable()) {
++        // Purpur start - async chunk generation barrier
++        if (ChunkTaskScheduler.mustRunStatusOnMainThread(this.toStatus)) {
++            this.generateTask = this.scheduler.createChunkTask(chunkX, chunkZ, this, priority);
++        } else if (((ChunkSystemChunkStatus)this.toStatus).moonrise$isParallelCapable()) {
+             this.generateTask = this.scheduler.parallelGenExecutor.createTask(this, priority);
+         } else {
+             final int writeRadius = ((ChunkSystemChunkStatus)this.toStatus).moonrise$getWriteRadius();
+@@ -54,6 +_,7 @@
+                 this.generateTask = this.scheduler.radiusAwareScheduler.createTask(chunkX, chunkZ, writeRadius, this, priority);
+             }
+         }
++        // Purpur end - async chunk generation barrier
+     }
+ 
+     @Override

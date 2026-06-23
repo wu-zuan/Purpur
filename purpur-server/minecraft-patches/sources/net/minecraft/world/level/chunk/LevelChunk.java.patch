@@ -1,0 +1,18 @@
+--- a/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -630,6 +_,7 @@
+ 
+     // CraftBukkit start
+     public void loadCallback() {
++        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(this.level, this.locX, this.locZ, "Cannot fire chunk load/populate events off-main");
+         if (this.loadedTicketLevel) { LOGGER.error("Double calling chunk load!", new Throwable()); } // Paper
+         // Paper start
+         this.loadedTicketLevel = true;
+@@ -671,6 +_,7 @@
+     }
+ 
+     public void unloadCallback() {
++        ca.spottedleaf.moonrise.common.util.TickThread.ensureTickThread(this.level, this.locX, this.locZ, "Cannot fire chunk unload events off-main");
+         if (!this.loadedTicketLevel) { LOGGER.error("Double calling chunk unload!", new Throwable()); } // Paper
+         org.bukkit.Server server = this.level.getCraftServer();
+         org.bukkit.craftbukkit.event.CraftEventFactory.callEntitiesUnloadEvent(this.level, this.chunkPos, ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getChunkTaskScheduler().chunkHolderManager.getChunkHolder(this.locX, this.locZ).getEntityChunk().getAllEntities()); // Paper - rewrite chunk system

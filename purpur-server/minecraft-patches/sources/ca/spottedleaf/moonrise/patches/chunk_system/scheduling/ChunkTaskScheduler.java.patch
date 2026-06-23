@@ -1,0 +1,15 @@
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkTaskScheduler.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkTaskScheduler.java
+@@ -255,6 +_,12 @@
+         return (status.ordinal() - 1) + getAccessRadius(ChunkStatus.FULL);
+     }
+ 
++    // Purpur start - async chunk generation barrier
++    public static boolean mustRunStatusOnMainThread(final ChunkStatus status) {
++        return status.isOrAfter(ChunkStatus.FEATURES);
++    }
++    // Purpur end - async chunk generation barrier
++
+ 
+     public final ReentrantAreaLock schedulingLockArea;
+     private final int lockShift;
