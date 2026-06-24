@@ -1,0 +1,247 @@
+--- a/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
++++ b/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
+@@ -1,7 +_,12 @@
+ package net.minecraft.world.level.block.piston;
+ 
++import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Objects;
++import java.util.concurrent.ForkJoinPool;
++import java.util.concurrent.ForkJoinWorkerThread;
++import java.util.concurrent.atomic.AtomicInteger;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
+ import net.minecraft.core.HolderLookup;
+@@ -37,6 +_,21 @@
+     private static final float DEFAULT_PROGRESS = 0.0F;
+     private static final boolean DEFAULT_EXTENDING = false;
+     private static final boolean DEFAULT_SOURCE = false;
++    // Purpur start - async piston collision math for entity-heavy contraptions
++    private static final int ASYNC_PISTON_ENTITY_THRESHOLD = 96;
++    private static final AtomicInteger ASYNC_PISTON_THREAD_ID = new AtomicInteger();
++    private static final ForkJoinPool ASYNC_PISTON_COLLISION_EXECUTOR = new ForkJoinPool(
++        Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors() - 1)),
++        pool -> {
++            ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
++            thread.setName("Purpur Piston Collision Worker #" + ASYNC_PISTON_THREAD_ID.incrementAndGet());
++            thread.setDaemon(true);
++            return thread;
++        },
++        null,
++        true
++    );
++    // Purpur end - async piston collision math for entity-heavy contraptions
+     private BlockState movedState = DEFAULT_BLOCK_STATE;
+     private Direction direction = Direction.DOWN; // Paper - default to first value to avoid NPE
+     private boolean extending = false;
+@@ -46,6 +_,12 @@
+     private float progressO = 0.0F;
+     private long lastTicked;
+     private int deathTicks;
++    // Purpur start - cache moving piston collision shape during entity-heavy collisions
++    private long cachedCollisionShapeTick = Long.MIN_VALUE;
++    private int cachedCollisionShapeProgress = Integer.MIN_VALUE;
++    private Direction cachedCollisionShapeNoClipDirection;
++    private VoxelShape cachedCollisionShape;
++    // Purpur end - cache moving piston collision shape during entity-heavy collisions
+ 
+     public PistonMovingBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+         super(BlockEntityType.PISTON, worldPosition, blockState);
+@@ -127,6 +_,12 @@
+             if (!entities.isEmpty()) {
+                 List<AABB> shapeAabbs = shape.toAabbs();
+                 boolean causeBounce = self.movedState.is(Blocks.SLIME_BLOCK);
++                // Purpur start - async piston collision math for entity-heavy contraptions
++                if (entities.size() >= ASYNC_PISTON_ENTITY_THRESHOLD) {
++                    moveCollidedEntitiesWithAsyncMath(pos, movement, deltaProgress, self, shapeAabbs, causeBounce, entities);
++                    return;
++                }
++                // Purpur end - async piston collision math for entity-heavy contraptions
+                 Iterator var12 = entities.iterator();
+ 
+                 while (true) {
+@@ -202,6 +_,113 @@
+         NOCLIP.set(null);
+     }
+ 
++    // Purpur start - async piston collision math for entity-heavy contraptions
++    private static void moveCollidedEntitiesWithAsyncMath(
++        final BlockPos pos,
++        final Direction movement,
++        final double deltaProgress,
++        final PistonMovingBlockEntity self,
++        final List<AABB> shapeAabbs,
++        final boolean causeBounce,
++        final List<Entity> entities
++    ) {
++        List<AABB> movedShapeAabbs = new ArrayList<>(shapeAabbs.size());
++        for (AABB shapeAabb : shapeAabbs) {
++            movedShapeAabbs.add(moveByPositionAndProgress(pos, shapeAabb, self));
++        }
++
++        List<PistonEntitySnapshot> snapshots = new ArrayList<>(entities.size());
++        for (Entity entity : entities) {
++            if (entity.getPistonPushReaction() == PushReaction.IGNORE || causeBounce && entity instanceof ServerPlayer) {
++                continue;
++            }
++
++            snapshots.add(
++                new PistonEntitySnapshot(
++                    entity,
++                    entity.getBoundingBox(),
++                    causeBounce ? getPistonBounceDelta(entity, movement) : null
++                )
++            );
++        }
++
++        List<PistonEntityMove> moves = ASYNC_PISTON_COLLISION_EXECUTOR.submit(
++            () -> snapshots.parallelStream()
++                .map(snapshot -> computePistonEntityMove(snapshot, movedShapeAabbs, movement, deltaProgress))
++                .filter(Objects::nonNull)
++                .toList()
++        ).join();
++
++        for (PistonEntityMove move : moves) {
++            Entity entity = move.entity();
++            Vec3 bounceDelta = move.bounceDelta();
++            if (bounceDelta != null) {
++                entity.setDeltaMovement(bounceDelta);
++                // Paper - EAR items stuck in slime pushed by a piston
++                entity.activatedTick = Math.max(entity.activatedTick, net.minecraft.server.MinecraftServer.currentTick + 10);
++                entity.activatedImmunityTick = Math.max(entity.activatedImmunityTick, net.minecraft.server.MinecraftServer.currentTick + 10);
++                // Paper end
++            }
++
++            double delta = move.delta();
++            if (!(delta <= 0.0)) {
++                delta = Math.min(delta, deltaProgress) + 0.01;
++                moveEntityByPiston(movement, entity, delta, movement);
++                if (!self.extending && self.isSourcePiston) {
++                    fixEntityWithinPistonBase(pos, entity, movement, deltaProgress);
++                }
++            }
++        }
++    }
++
++    private static Vec3 getPistonBounceDelta(final Entity entity, final Direction movement) {
++        Vec3 deltaMovement = entity.getDeltaMovement();
++        double dx = deltaMovement.x;
++        double dy = deltaMovement.y;
++        double dz = deltaMovement.z;
++        switch (movement.getAxis()) {
++            case X:
++                dx = movement.getStepX();
++                break;
++            case Y:
++                dy = movement.getStepY();
++                break;
++            case Z:
++                dz = movement.getStepZ();
++        }
++
++        return new Vec3(dx, dy, dz);
++    }
++
++    private static PistonEntityMove computePistonEntityMove(
++        final PistonEntitySnapshot snapshot,
++        final List<AABB> shapeAabbs,
++        final Direction movement,
++        final double deltaProgress
++    ) {
++        double delta = 0.0;
++
++        for (AABB shapeAabb : shapeAabbs) {
++            AABB movingAABB = PistonMath.getMovementArea(shapeAabb, movement, deltaProgress);
++            AABB entityAabb = snapshot.entityAabb();
++            if (movingAABB.intersects(entityAabb)) {
++                delta = Math.max(delta, getMovement(movingAABB, movement, entityAabb));
++                if (delta >= deltaProgress) {
++                    break;
++                }
++            }
++        }
++
++        return delta <= 0.0 && snapshot.bounceDelta() == null ? null : new PistonEntityMove(snapshot.entity(), delta, snapshot.bounceDelta());
++    }
++
++    private record PistonEntitySnapshot(Entity entity, AABB entityAabb, Vec3 bounceDelta) {
++    }
++
++    private record PistonEntityMove(Entity entity, double delta, Vec3 bounceDelta) {
++    }
++    // Purpur end - async piston collision math for entity-heavy contraptions
++
+     private static void moveStuckEntities(final Level level, final BlockPos pos, final float newProgress, final PistonMovingBlockEntity self) {
+         if (self.isStickyForEntities()) {
+             Direction movement = self.getMovementDirection();
+@@ -368,6 +_,19 @@
+     }
+ 
+     public VoxelShape getCollisionShape(final BlockGetter level, final BlockPos pos) {
++        // Purpur start - cache moving piston collision shape during entity-heavy collisions
++        Direction noClipDirection = NOCLIP.get();
++        long collisionTick = level instanceof Level levelAccess ? levelAccess.getGameTime() : this.lastTicked;
++        int collisionProgress = Float.floatToIntBits(this.progress);
++        if (
++            this.cachedCollisionShape != null
++                && this.cachedCollisionShapeTick == collisionTick
++                && this.cachedCollisionShapeProgress == collisionProgress
++                && this.cachedCollisionShapeNoClipDirection == noClipDirection
++        ) {
++            return this.cachedCollisionShape;
++        }
++        // Purpur end - cache moving piston collision shape during entity-heavy collisions
+         VoxelShape pistonHeadShape;
+         if (!this.extending && this.isSourcePiston && this.movedState.getBlock() instanceof PistonBaseBlock) {
+             pistonHeadShape = this.movedState.setValue(PistonBaseBlock.EXTENDED, true).getCollisionShape(level, pos);
+@@ -375,26 +_,33 @@
+             pistonHeadShape = Shapes.empty();
+         }
+ 
+-        Direction noClipDirection = NOCLIP.get();
++        VoxelShape collisionShape; // Purpur - cache moving piston collision shape during entity-heavy collisions
+         if (this.progress < 1.0 && noClipDirection == this.getMovementDirection()) {
+-            return pistonHeadShape;
+-        }
+-
+-        BlockState blockState;
+-        if (this.isSourcePiston()) {
+-            blockState = Blocks.PISTON_HEAD
+-                .defaultBlockState()
+-                .setValue(PistonHeadBlock.FACING, this.direction)
+-                .setValue(PistonHeadBlock.SHORT, this.extending != 1.0F - this.progress < 0.25F);
++            collisionShape = pistonHeadShape; // Purpur - cache moving piston collision shape during entity-heavy collisions
+         } else {
+-            blockState = this.movedState;
++            BlockState blockState;
++            if (this.isSourcePiston()) {
++                blockState = Blocks.PISTON_HEAD
++                    .defaultBlockState()
++                    .setValue(PistonHeadBlock.FACING, this.direction)
++                    .setValue(PistonHeadBlock.SHORT, this.extending != 1.0F - this.progress < 0.25F);
++            } else {
++                blockState = this.movedState;
++            }
++
++            float extendedProgress = this.getExtendedProgress(this.progress);
++            double dx = this.direction.getStepX() * extendedProgress;
++            double dy = this.direction.getStepY() * extendedProgress;
++            double dz = this.direction.getStepZ() * extendedProgress;
++            collisionShape = Shapes.or(pistonHeadShape, blockState.getCollisionShape(level, pos).move(dx, dy, dz)); // Purpur - cache moving piston collision shape during entity-heavy collisions
+         }
+ 
+-        float extendedProgress = this.getExtendedProgress(this.progress);
+-        double dx = this.direction.getStepX() * extendedProgress;
+-        double dy = this.direction.getStepY() * extendedProgress;
+-        double dz = this.direction.getStepZ() * extendedProgress;
+-        return Shapes.or(pistonHeadShape, blockState.getCollisionShape(level, pos).move(dx, dy, dz));
++        // Purpur start - cache moving piston collision shape during entity-heavy collisions
++        this.cachedCollisionShapeTick = collisionTick;
++        this.cachedCollisionShapeProgress = collisionProgress;
++        this.cachedCollisionShapeNoClipDirection = noClipDirection;
++        return this.cachedCollisionShape = collisionShape;
++        // Purpur end - cache moving piston collision shape during entity-heavy collisions
+     }
+ 
+     public long getLastTicked() {
