@@ -1037,6 +1037,11 @@ public class PurpurWorldConfig {
         netherWartAffectedByBonemeal = getBoolean("blocks.nether_wart.affected-by-bonemeal", netherWartAffectedByBonemeal);
     }
 
+    public boolean tripwireDisarmed = false;
+    private void tripwireSettings() {
+        tripwireDisarmed = getBoolean("blocks.tripwire.disarmed", tripwireDisarmed);
+    }
+
     public boolean campFireLitWhenPlaced = true;
     private void campFireSettings() {
         campFireLitWhenPlaced = getBoolean("blocks.campfire.lit-when-placed", campFireLitWhenPlaced);

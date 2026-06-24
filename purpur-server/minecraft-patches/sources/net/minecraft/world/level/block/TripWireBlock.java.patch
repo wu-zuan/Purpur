@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/TripWireBlock.java
++++ b/net/minecraft/world/level/block/TripWireBlock.java
+@@ -118,7 +_,7 @@
+     @Override
+     public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+         if (io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) return state; // Paper - prevent disarming tripwires
+-        if (!level.isClientSide() && !player.getMainHandItem().isEmpty() && player.getMainHandItem().is(Items.SHEARS)) {
++        if (!level.isClientSide() && level.purpurConfig.tripwireDisarmed && !player.getMainHandItem().isEmpty() && player.getMainHandItem().is(Items.SHEARS)) { // Purpur - Configurable tripwire disarming
+             level.setBlock(pos, state.setValue(DISARMED, true), Block.UPDATE_NONE);
+             level.gameEvent(player, GameEvent.SHEAR, pos);
+         }
